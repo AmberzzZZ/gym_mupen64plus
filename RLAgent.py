@@ -115,8 +115,8 @@ class RLAgent:
 				# Exploration Policies
 				if self.exp_policy == 'e-greedy':
 					if np.random.random() < self.epsilon:         # explore
-						q = int(np.random.randint(self.model.nb_actions))
-						a = self.model.predict(q)
+						q = int(np.random.randint(self.model.nb_actions))   # index
+						a = self.model.predict(q)                 # action
 					else:                                         # exploit: a = argmaxQ(s,a)
 						q = self.model.online_network.predict(S)  # y0: output of the network using current weights, nb_action-dims
 						# first q.shape: (1, 16)
@@ -133,6 +133,7 @@ class RLAgent:
 							break
 				
 				# Store the experience
+				a = q        # use index
 				transition = [S, a, r, S_prime, a_prime, is_game_end]
 				self.memory.remember(*transition)
 				S = S_prime
@@ -171,12 +172,12 @@ class ReplayMemory():
 			batch_size = len(self.memory)
 		samples = np.array(sample(self.memory, batch_size))
 
-		print(batch_size)
-		print(samples.shape)
+		# print("batch_size:", batch_size)
+		# print("samples.shape:", samples.shape)
 
-		# Restructure Data------>transition = [S, a, r, S_prime, a_prime, game_over]
+		# Restructure Data------>transition = [S, a, r, S_prime, a_prime, is_game_end]
 		S = samples[:, 0 : input_dim]
-		a = samples[:, input_dim]
+		a = samples[:, input_dim]            # index
 		r = samples[:, input_dim + 1]
 		S_prime = samples[:, input_dim + 2 : 2 * input_dim + 2]
 		game_over = samples[:, 2 * input_dim + 3]
