@@ -128,23 +128,24 @@ class MarioKartEnv(Mupen64PlusEnv):
         return any(val < 100 for val in pixel_means)
 
     def _evaluate_end_state(self):
+        return all(self._checkpoint_tracker[self.lap-1])
         #cprint('Evaluate End State called!','yellow')
-        pix_arr = self.numpy_array
+        # pix_arr = self.numpy_array
 
-        upper_left = IMAGE_HELPER.GetPixelColor(pix_arr, 19, 19)
-        upper_right = IMAGE_HELPER.GetPixelColor(pix_arr, 620, 19)
-        bottom_left = IMAGE_HELPER.GetPixelColor(pix_arr, 19, 460)
-        bottom_right = IMAGE_HELPER.GetPixelColor(pix_arr, 620, 460)
+        # upper_left = IMAGE_HELPER.GetPixelColor(pix_arr, 19, 19)
+        # upper_right = IMAGE_HELPER.GetPixelColor(pix_arr, 620, 19)
+        # bottom_left = IMAGE_HELPER.GetPixelColor(pix_arr, 19, 460)
+        # bottom_right = IMAGE_HELPER.GetPixelColor(pix_arr, 620, 460)
 
-        if upper_left == upper_right == bottom_left == bottom_right:
-            self.end_episode_confidence += 1
-        else:
-            self.end_episode_confidence = 0
+        # if upper_left == upper_right == bottom_left == bottom_right:
+        #     self.end_episode_confidence += 1
+        # else:
+        #     self.end_episode_confidence = 0
 
-        if self.end_episode_confidence > self.END_EPISODE_THRESHOLD:
-            return True
-        else:
-            return False
+        # if self.end_episode_confidence > self.END_EPISODE_THRESHOLD:
+        #     return True
+        # else:
+        #     return False
 
     def _navigate_menu(self):
         frame = 0
