@@ -34,9 +34,9 @@ depth_contrast = 0.5
 learn_param = {
     'learn_algo' : 'dqlearn',
     'exp_policy' : 'e-greedy',
-    'frame_skips' : 4,
+    'frame_skips' : 20,   # 4
     'nb_epoch' : 5,     #100
-    'steps' : 1000,         # 5000
+    'steps' : 60,         # 5000
     'batch_size' : 40,
     'memory_size' : 10000,
     'nb_frames' : 3,

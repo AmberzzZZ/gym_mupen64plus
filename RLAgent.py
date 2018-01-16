@@ -108,7 +108,10 @@ class RLAgent:
 			self.prev_frames = None
 			a_prime = 0
 			env.reset()
-			S, r, is_game_end = self.get_state_data(env, [0,0,0,0,0])    # this s should be specificly initialed
+			env.render()
+			for i in range(88):
+			    S, r, is_game_end = self.get_state_data(env, [0, 0, 0, 0, 0])    # NOOP until green light
+			    env.render()
 
 			while step < self.steps:
 
@@ -142,9 +145,41 @@ class RLAgent:
 				# Generate batch
 				batch = self.memory.get_batch_dqlearn(model=self.model, batch_size=self.batch_size, alpha=self.alpha, gamma=self.gamma)
 
+				# Train the network
+				if batch:
+					inputs, targets = batch
+					loss += float(self.model.online_network.train_on_batch(inputs, targets))
+
+
+				# # test
+				# if step==30:
+				# 	is_game_end = 1          # game_end restart is effective
+
+				if is_game_end:
+					env.reset()
+					env.render()
+					for i in range(88):
+					    S = self.get_state_data(env, [0, 0, 0, 0, 0])    # NOOP until green light
+					    env.render()
+					self.prev_frames = None
+					S, r, is_game_end = self.get_state_data(env, [0, 0, 0, 0, 0])
+					break
+
 				#
 				step += 1
 				pbar.update(1)
+
+			# end of the trainning loop
+
+
+			# Decay Epsilon
+			if self.epsilon > self.final_epsilon and epoch >= self.epislon_wait: 
+				self.epsilon -= self.delta_epsilon
+
+			# Decay Alpha
+			if self.alpha > self.final_alpha and epoch >= self.alpha_wait: 
+				self.alpha -= self.delta_alpha
+
 
 
 class ReplayMemory():
