@@ -98,10 +98,9 @@ class RLAgent:
 		training_data = []
 		best_score = None
 
-		for epoch in range(self.nb_epoch):
+		for epoch in range(self.nb_epoch):  
 
 			# training loop
-			pbar = tqdm(total=self.steps)
 			step = 0
 			loss = 0
 			total_reward = 0
@@ -112,9 +111,9 @@ class RLAgent:
 			for i in range(88):
 			    S, r, is_game_end = self.get_state_data(env, [0, 0, 0, 0, 0])    # NOOP until green light
 			    env.render()
+			pbar = tqdm(total=self.steps)
 
 			while step < self.steps:
-
 				# Exploration Policies
 				if self.exp_policy == 'e-greedy':
 					if np.random.random() < self.epsilon:         # explore
@@ -125,7 +124,7 @@ class RLAgent:
 						# first q.shape: (1, 16)
 						q = int(np.argmax(q[0]))
 						a = self.model.predict(q)
-
+				# print(a)
 				# Advance Action over frame_skips + 1
 				# if not game.game.is_episode_finished(): 
 					# game.play(a, self.frame_skips+1)      # repeat the same action for 'frame_skips+1' frames
@@ -150,24 +149,25 @@ class RLAgent:
 					inputs, targets = batch
 					loss += float(self.model.online_network.train_on_batch(inputs, targets))
 
+				step += 1
+				pbar.update(1)
 
 				# # test
-				# if step==30:
-				# 	is_game_end = 1          # game_end restart is effective
+				# if step==10:
+					# is_game_end = 1          # game_end restart is effective
 
 				if is_game_end:
-					env.reset()
-					env.render()
-					for i in range(88):
-					    S = self.get_state_data(env, [0, 0, 0, 0, 0])    # NOOP until green light
-					    env.render()
-					self.prev_frames = None
-					S, r, is_game_end = self.get_state_data(env, [0, 0, 0, 0, 0])
+					# env.reset()
+					# env.render()
+					# for i in range(88):
+					#     S = self.get_state_data(env, [0, 0, 0, 0, 0])    # NOOP until green light
+					#     env.render()
+					# self.prev_frames = None
+					# S, r, is_game_end = self.get_state_data(env, [0, 0, 0, 0, 0])
 					break
 
 				#
-				step += 1
-				pbar.update(1)
+
 
 			# end of the trainning loop
 
