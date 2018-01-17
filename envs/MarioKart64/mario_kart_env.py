@@ -48,17 +48,21 @@ class MarioKartEnv(Mupen64PlusEnv):
         # Nothing to do on the first call to reset()
         if self.reset_count > 0:
 
-            if self.episode_over:
-                self._navigate_post_race_menu()
-                self.episode_over = False
-            else:
-                self.controller_server.send_controls(ControllerState.NO_OP, start_button=1)
+            # if self.episode_over:
+            #     # manually reset of the game stuck state
+            #     # let the agent continue to run to the next checkpoint
+            #     print("reset---------_navigate_post_race_menu-------------")
+            #     self._navigate_post_race_menu()
+            #     self.episode_over = False
+            # else:
+            # reset to the start position
+            self.controller_server.send_controls(ControllerState.NO_OP, start_button=1)
+            self.controller_server.send_controls(ControllerState.NO_OP)
+            self.controller_server.send_controls(ControllerState.JOYSTICK_DOWN)
+            self.controller_server.send_controls(ControllerState.NO_OP)
+            self.controller_server.send_controls(ControllerState.A_BUTTON)
+            for i in range(77):
                 self.controller_server.send_controls(ControllerState.NO_OP)
-                self.controller_server.send_controls(ControllerState.JOYSTICK_DOWN)
-                self.controller_server.send_controls(ControllerState.NO_OP)
-                self.controller_server.send_controls(ControllerState.A_BUTTON)
-                for i in range(77):
-                    self.controller_server.send_controls(ControllerState.NO_OP)
 
 
         return super(MarioKartEnv, self)._reset()
@@ -128,6 +132,8 @@ class MarioKartEnv(Mupen64PlusEnv):
         return any(val < 100 for val in pixel_means)
 
     def _evaluate_end_state(self):
+        # print("here to Evaluate the game end state")
+        # print(all(self._checkpoint_tracker[self.lap-1]))
         return all(self._checkpoint_tracker[self.lap-1])
         #cprint('Evaluate End State called!','yellow')
         # pix_arr = self.numpy_array

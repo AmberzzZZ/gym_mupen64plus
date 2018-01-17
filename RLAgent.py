@@ -18,6 +18,7 @@ from tqdm import tqdm
 import os
 import datetime
 from scipy.misc import imresize
+from datetime import datetime
 
 class RLAgent:
 
@@ -97,13 +98,10 @@ class RLAgent:
 
 		training_data = []
 		best_score = None
-
+		
 		for epoch in range(self.nb_epoch):  
 
 			# training loop
-			step = 0
-			loss = 0
-			total_reward = 0
 			self.prev_frames = None
 			a_prime = 0
 			env.reset()
@@ -111,9 +109,21 @@ class RLAgent:
 			for i in range(88):
 			    S, r, is_game_end = self.get_state_data(env, [0, 0, 0, 0, 0])    # NOOP until green light
 			    env.render()
-			pbar = tqdm(total=self.steps)
+			# for i in range(210):
+			# 	S, r, is_game_end = self.get_state_data(env, [0, 0, 1, 0, 0])
+			# 	env.render()
+			# pbar = tqdm(total=self.steps)
+
+			if epoch:
+				training_data.append([loss, np.mean(rewards), np.max(rewards), np.min(rewards), np.std(rewards)])
+			
+			step = 0
+			loss = 0
+			total_reward = 0
+			rewards = []	
 
 			while step < self.steps:
+				print("episode: %d, step: %d, frames: %d" % ((epoch+1), (step+1), ((step+1)*(1+self.frame_skips))))
 				# Exploration Policies
 				if self.exp_policy == 'e-greedy':
 					if np.random.random() < self.epsilon:         # explore
@@ -135,7 +145,7 @@ class RLAgent:
 							break
 
 				# give a punishment for failing to finish the game
-				if step==self.steps:
+				if step==self.steps-1:
 					print("fail to Finish")
 					r = -1000
 
@@ -146,6 +156,11 @@ class RLAgent:
 				S = S_prime
 				a_prime = a
 
+				rewards.append(r)
+				total_reward += r
+				# print("rewards: ", rewards)
+				print("total_reward: ", total_reward)
+
 				# Generate batch
 				batch = self.memory.get_batch_dqlearn(model=self.model, batch_size=self.batch_size, alpha=self.alpha, gamma=self.gamma)
 
@@ -155,13 +170,14 @@ class RLAgent:
 					loss += float(self.model.online_network.train_on_batch(inputs, targets))
 
 				step += 1
-				pbar.update(1)
+				# pbar.update(1)
 
 				# # test
 				# if step==10:
 					# is_game_end = 1          # game_end restart is effective
-
+				# print("reward: %f , game_state: %d" % (r, is_game_end))
 				if is_game_end:
+					print("chekpoint achieved! game end!   reward: ", r)          # mannually reset get stuck state also come into here
 					# env.reset()
 					# env.render()
 					# for i in range(88):
@@ -171,7 +187,7 @@ class RLAgent:
 					# S, r, is_game_end = self.get_state_data(env, [0, 0, 0, 0, 0])
 					break
 
-			# end of the trainning loop
+			# end of while step
 
 
 			# @amber: now the decay frequency is per episode, to be changed
@@ -182,6 +198,20 @@ class RLAgent:
 			# Decay Alpha
 			if self.alpha > self.final_alpha and epoch >= self.alpha_wait: 
 				self.alpha -= self.delta_alpha
+
+		# end of for epoch
+
+		# save the weights of the last episode
+		training_data.append([loss, np.mean(rewards), np.max(rewards), np.min(rewards), np.std(rewards)])
+		np.savetxt("data/results/"+ "training_data"+'_' + datetime.now().strftime("%m_%d_%H_%M_%S") + ".csv", np.array(training_data))
+
+		# Save best weights
+		total_reward_avg = training_data[-1][1]     # axis 0: 'nb_epoch' dims
+		if best_score is None or (best_score is not None and total_reward_avg > best_score):
+			self.model.save_weights("model_weigths"+'_'+ datetime.now().strftime("%m_%d_%H_%M_%S") + ".h5")
+			best_score = total_reward_avg
+
+
 
 
 class ReplayMemory():
