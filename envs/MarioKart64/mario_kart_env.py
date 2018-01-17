@@ -31,7 +31,7 @@ class MarioKartEnv(Mupen64PlusEnv):
     MAP_SERIES = 0
     MAP_CHOICE = 0
 
-    ENABLE_CHECKPOINTS = False
+    ENABLE_CHECKPOINTS = True
 
     def __init__(self, character='mario'):
         super(MarioKartEnv, self).__init__(mk_config['ROM_NAME'])

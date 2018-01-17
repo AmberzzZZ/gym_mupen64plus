@@ -34,9 +34,9 @@ depth_contrast = 0.5
 learn_param = {
     'learn_algo' : 'dqlearn',
     'exp_policy' : 'e-greedy',
-    'frame_skips' : 20,   # 4
+    'frame_skips' : 4,   # 4
     'nb_epoch' : 5,     #100
-    'steps' : 60,         # 5000
+    'steps' : 200,         # 5000
     'batch_size' : 40,
     'memory_size' : 10000,
     'nb_frames' : 3,
@@ -62,11 +62,11 @@ def train_model():
 
     resolution = (120, 160)
 
-    actions = [[-80,   0, 1, 0, 0],             # left
-    		   [ 80,   0, 1, 0, 0],             # right
-    		   [  0, -80, 0, 1, 0],             # back
-    		   [  0,   0, 1, 0, 0],             # go straight
-    		   [  0,   0, 0, 1, 0]]             # brake
+    actions = [[-40,   0, 1, 0, 0],             # left
+    		   [ 40,   0, 1, 0, 0],             # right
+    		   # [  0, -80, 0, 1, 0],             # back
+    		   [  0,   0, 1, 0, 0]]            # go straight
+    		   # [  0,   0, 0, 1, 0]]             # brake
 
     # Initiates Model
     model = DQNModel(resolution=resolution, 

@@ -124,7 +124,7 @@ class RLAgent:
 						# first q.shape: (1, 16)
 						q = int(np.argmax(q[0]))
 						a = self.model.predict(q)
-				# print(a)
+
 				# Advance Action over frame_skips + 1
 				# if not game.game.is_episode_finished(): 
 					# game.play(a, self.frame_skips+1)      # repeat the same action for 'frame_skips+1' frames
@@ -133,7 +133,12 @@ class RLAgent:
 						S_prime, r, is_game_end = self.get_state_data(env, a)
 						if is_game_end:
 							break
-				
+
+				# give a punishment for failing to finish the game
+				if step==self.steps:
+					print("fail to Finish")
+					r = -1000
+
 				# Store the experience
 				a = q        # use index
 				transition = [S, a, r, S_prime, a_prime, is_game_end]
@@ -166,12 +171,10 @@ class RLAgent:
 					# S, r, is_game_end = self.get_state_data(env, [0, 0, 0, 0, 0])
 					break
 
-				#
-
-
 			# end of the trainning loop
 
 
+			# @amber: now the decay frequency is per episode, to be changed
 			# Decay Epsilon
 			if self.epsilon > self.final_epsilon and epoch >= self.epislon_wait: 
 				self.epsilon -= self.delta_epsilon
@@ -179,7 +182,6 @@ class RLAgent:
 			# Decay Alpha
 			if self.alpha > self.final_alpha and epoch >= self.alpha_wait: 
 				self.alpha -= self.delta_alpha
-
 
 
 class ReplayMemory():
