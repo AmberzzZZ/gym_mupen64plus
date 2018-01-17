@@ -62,6 +62,7 @@ class RLAgent:
 		# return the processed RGB data of several successive frames
 
 		(obs, reward, end, info) = env.step(action) 
+		print("reward: ", reward)
 		env.render()
 		# print(obs.shape)                    # (480, 640, 3) screen pixels
 		# process the data 
@@ -109,9 +110,10 @@ class RLAgent:
 			for i in range(88):
 			    S, r, is_game_end = self.get_state_data(env, [0, 0, 0, 0, 0])    # NOOP until green light
 			    env.render()
-			# for i in range(210):
-			# 	S, r, is_game_end = self.get_state_data(env, [0, 0, 1, 0, 0])
-			# 	env.render()
+			# skip the straight piece of track
+			for i in range(200):
+				S, r, is_game_end = self.get_state_data(env, [0, 0, 1, 0, 0])
+				env.render()
 			# pbar = tqdm(total=self.steps)
 
 			if epoch:
@@ -136,14 +138,15 @@ class RLAgent:
 						a = self.model.predict(q)
 
 				# Advance Action over frame_skips + 1
-				# if not game.game.is_episode_finished(): 
-					# game.play(a, self.frame_skips+1)      # repeat the same action for 'frame_skips+1' frames
 				if not is_game_end:
+					max_r = -1
 					for i in range(self.frame_skips+1):
 						S_prime, r, is_game_end = self.get_state_data(env, a)
+						if r > max_r:
+							max_r = r
 						if is_game_end:
 							break
-
+				r = max_r
 				# give a punishment for failing to finish the game
 				if step==self.steps-1:
 					print("fail to Finish")
