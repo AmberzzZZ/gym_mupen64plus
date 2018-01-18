@@ -62,7 +62,6 @@ class RLAgent:
 		# return the processed RGB data of several successive frames
 
 		(obs, reward, end, info) = env.step(action) 
-		print("reward: ", reward)
 		env.render()
 		# print(obs.shape)                    # (480, 640, 3) screen pixels
 		# process the data 
@@ -110,10 +109,10 @@ class RLAgent:
 			for i in range(88):
 			    S, r, is_game_end = self.get_state_data(env, [0, 0, 0, 0, 0])    # NOOP until green light
 			    env.render()
-			# skip the straight piece of track
-			for i in range(200):
-				S, r, is_game_end = self.get_state_data(env, [0, 0, 1, 0, 0])
-				env.render()
+			# # skip the straight piece of track, skip the first 2 checkpoints
+			# for i in range(160):
+			# 	S, r, is_game_end = self.get_state_data(env, [0, 0, 1, 0, 0])
+			# 	env.render()
 			# pbar = tqdm(total=self.steps)
 
 			if epoch:
@@ -206,16 +205,48 @@ class RLAgent:
 
 		# save the weights of the last episode
 		training_data.append([loss, np.mean(rewards), np.max(rewards), np.min(rewards), np.std(rewards)])
-		np.savetxt("data/results/"+ "training_data"+'_' + datetime.now().strftime("%m_%d_%H_%M_%S") + ".csv", np.array(training_data))
+		np.savetxt("data/results/"+ "training_data"+'_' + datetime.now().strftime("%m_%d_%H_%M") + ".csv", np.array(training_data))
 
 		# Save best weights
 		total_reward_avg = training_data[-1][1]     # axis 0: 'nb_epoch' dims
 		if best_score is None or (best_score is not None and total_reward_avg > best_score):
-			self.model.save_weights("model_weigths"+'_'+ datetime.now().strftime("%m_%d_%H_%M_%S") + ".h5")
+			self.model.save_weights("model_weigths"+'_'+ datetime.now().strftime("%m_%d_%H_%M") + ".h5")
 			best_score = total_reward_avg
 
+		print("%d episodes of training Finished! " % (self.epoch))
+		raw_input("Press <enter> to exit... ")
+		env.close()
 
 
+	def test(self, env):
+
+		print("Test:")              
+		print("Model:", self.model.__class__.__name__)          # DQN
+		print("Algorithm:", self.learn_algo)                    # deep Q-learning
+		print("Exploration_Policy:", self.exp_policy)           # epsilon-greedy
+		print("Frame Skips:", self.frame_skips)                 # 4
+		print("Number of Previous Frames Used:", self.nb_frames)# 3
+
+		env.reset()
+		env.render()
+		for i in range(88):
+		    S, r, is_game_end = self.get_state_data(env, [0, 0, 0, 0, 0])    # NOOP until green light
+		    env.render()
+		# # skip the straight piece of track, skip the first 2 checkpoints
+		# for i in range(160):
+		# 	S, r, is_game_end = self.get_state_data(env, [0, 0, 1, 0, 0])
+		# 	env.render()
+
+		while is_game_end==0:
+			# retrieve action from the model
+			Y = self.model.online_network.predict(S)
+			q = np.argmax(Y)
+			a = self.model.predict(q)
+			S, r, is_game_end = self.get_state_data(env, a)
+			env.render()			
+
+		raw_input("Press <enter> to exit... ")
+		env.close()
 
 class ReplayMemory():
 
