@@ -21,22 +21,21 @@ import numpy as np
 track_env = 'Mario-Kart-Luigi-Raceway-v0'
 
 model_weights = None
-depth_radius = 1.0
-depth_contrast = 0.5
+model_weights = "model_weigths_01_20_18_03.h5"
 learn_param = {
     'learn_algo' : 'dqlearn',
     'exp_policy' : 'e-greedy',
     'frame_skips' : 4,   # 4
     'nb_epoch' : 20,     #100
-    'steps' : 150,         # 5000
+    'steps' : 120,         # 5000
     'batch_size' : 40,
     'memory_size' : 10000,
     'nb_frames' : 3,
-    'alpha' : [1.0, 0.1],
+    'alpha' : [.7, 0.7],
     'alpha_rate' : 0.7,
     'alpha_wait' : 10,
     'gamma' : 0.9,
-    'epsilon' : [1., 0.8],     #[1.0, 0.1]
+    'epsilon' : [1.0, 1.0],     #[1.0, 0.1]
     'epsilon_rate' : 0.35,
     'epislon_wait' : 10,   #10
     'nb_tests' : 1,     # 20
@@ -50,9 +49,9 @@ def train_model():
 
     resolution = (120, 160)
 
-    actions = [[-40,   0, 1, 0, 0],             # left
-    		   [ 40,   0, 1, 0, 0],             # right
-    		   # [  0, -80, 0, 1, 0],             # back
+    actions = [[-60,   0, 1, 0, 0],             # left
+    		   [ 60,   0, 1, 0, 0],             # right
+    		   [  0, -80, 0, 1, 0],             # back
     		   [  0,   0, 1, 0, 0]]            # go straight
     		   # [  0,   0, 0, 1, 0]]             # brake
 
@@ -64,7 +63,6 @@ def train_model():
     # print("number of actions: ", len(doom.actions))   # 16
 
     if model_weights: 
-        print("with a pretrained weights-------by amber")
         model.load_weights(model_weights)
     
     agent = RLAgent(model, **learn_param)    
