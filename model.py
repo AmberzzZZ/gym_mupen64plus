@@ -54,24 +54,21 @@ class DQNModel:
         self.x0 = Input(shape=(nb_frames, resolution[0], resolution[1]))
 
         # Convolutional Layer
-        m = Conv2D(32, (8, 8), strides = (4,4), activation='relu', )(self.x0)
-        m = Conv2D(64, (5, 5), strides = (4,4), activation='relu')(m)
-        m = Flatten()(m)
+        conv1 = Conv2D(32, (8, 8), strides = (4,4), activation='relu', )(self.x0)
+        conv2 = Conv2D(64, (5, 5), strides = (4,4), activation='relu')(conv1)
+        fc = Flatten()(conv2)
 
         # Fully Connected Layer
-        m = Dense(4032, activation='relu')(m)
-        m = Dropout(0.5)(m)
+        fc1 = Dense(4032, activation='relu')(fc)
+        fc11 = Dropout(0.5)(fc1)
 
         # Output Layer
-        if distilled:
-            self.y0 = Dense(self.nb_actions, activation='softmax')(m)
-        else:
-            self.y0 = Dense(self.nb_actions)(m)
+        self.y0 = Dense(self.nb_actions)(fc11)
 
         self.online_network = Model(inputs=self.x0, outputs=self.y0)
         self.online_network.compile(optimizer=self.optimizer, loss=self.loss_fun)
-        self.target_network = None
-        self.state_predictor = None
+        self.visualize_network = Model(inputs=self.x0, outputs=conv1)
+
         #self.online_network.summary()
         #plot_model(self.online_network, to_file='../doc/model.png', show_shapes=True, show_layer_names=False)
         #tbcall = KC.TensorBoard(log_dir="../doc/logs", histogram_freq=0, write_graph=True, write_images=True)
@@ -124,7 +121,6 @@ class DQNModel:
 
         '''
         self.online_network.save_weights('data/model_weights/' + filename, overwrite=True)
-
 
 
 
