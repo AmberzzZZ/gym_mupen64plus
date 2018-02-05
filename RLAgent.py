@@ -110,10 +110,10 @@ class RLAgent:
 			for i in range(88):
 			    S, r, is_game_end, _ = self.get_state_data(env, [0, 0, 0, 0, 0])    # NOOP until green light
 			    env.render()
-			# skip the straight piece of track, skip the first 2 checkpoints
-			for i in range(160):
-				S, r, is_game_end, _ = self.get_state_data(env, [0, 0, 1, 0, 0])
-				env.render()
+			# # skip the straight piece of track, skip the first 2 checkpoints
+			# for i in range(160):
+			# 	S, r, is_game_end, _ = self.get_state_data(env, [0, 0, 1, 0, 0])
+			# 	env.render()
 			# pbar = tqdm(total=self.steps)
 
 			# if epoch:
